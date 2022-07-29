@@ -1,7 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
-const ListPrompt = require('inquirer/lib/prompts/list');
+const cTable = require('console.table')
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -51,7 +51,12 @@ const menuPrompt = () => {
   ]).then(data => {
     // Viewing all departments
     if (data.userChoice == menuChoices[0]) {
-      menuPrompt();
+      db.query('SELECT * FROM departments', (err, results) => {
+        if (err) { console.log(err) };
+        console.log('');
+        console.table(results);
+      })
+      setTimeout(menuPrompt, 100);
     }
     // Viewing all roles
     if (data.userChoice == menuChoices[1]) {
