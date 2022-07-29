@@ -74,7 +74,7 @@ const menuPrompt = () => {
     // Viewing all employees
     if (data.userChoice == menuChoices[2]) {
       // Selecting employees table but changing the role_id column to title, changing manager_id column to manager, and adding the data from the roles table for user readability
-      db.query('SELECT employees1.id, employees1.first_name, employees1.last_name, roles.title, departments.dep_name AS department, roles.salary, CONCAT(employees2.first_name, " ", employees2.last_name) AS manager FROM employees employees1 JOIN roles ON employees1.role_id = roles.id JOIN departments ON roles.department_id = departments.id LEFT JOIN employees employees2 ON employees1.manager_id = employees2.id;', (err, results) => {
+      db.query('SELECT all_employees.id, all_employees.first_name, all_employees.last_name, roles.title, departments.dep_name AS department, roles.salary, CONCAT(manager_employees.first_name, " ", manager_employees.last_name) AS manager FROM employees all_employees JOIN roles ON all_employees.role_id = roles.id JOIN departments ON roles.department_id = departments.id LEFT JOIN employees manager_employees ON all_employees.manager_id = manager_employees.id;', (err, results) => {
         if (err) { console.log(err); }
         console.log(''); // Line break for formatting
         console.table(results);
