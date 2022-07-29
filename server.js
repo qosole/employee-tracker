@@ -172,7 +172,9 @@ const menuPrompt = () => {
     }
     // Adding an employee
     if (data.userChoice == menuChoices[5]) {
-      const employeeChoicesWithNone = employeeChoices.unshift('None'); // Adding a None option in case there is no manager
+       // Adding a None option in case there is no manager
+      let employeeChoicesWithNone = employeeChoices;
+      employeeChoicesWithNone.unshift('None');
       inquirer.prompt([
         {
           message: "Enter employee's first name (if you change your mind, enter nothing): ",
