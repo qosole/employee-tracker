@@ -172,6 +172,7 @@ const menuPrompt = () => {
     }
     // Adding an employee
     if (data.userChoice == menuChoices[5]) {
+      const employeeChoicesWithNone = employeeChoices.unshift('None'); // Adding a None option in case there is no manager
       inquirer.prompt([
         {
           message: "Enter employee's first name (if you change your mind, enter nothing): ",
@@ -190,7 +191,7 @@ const menuPrompt = () => {
         {
           type: 'list',
           message: "Who is the employee's manager?",
-          choices: employeeChoices.unshift('None'),
+          choices: employeeChoicesWithNone,
           name: 'employeeManager'
         }
       ]).then(data => {
@@ -203,7 +204,7 @@ const menuPrompt = () => {
           setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
         } else {
           // roleChoices.indexOf(data.employeeRole) + 1 gives the role_id of the user-selected role. Similar idea for manager_id (no +1 because I added a None option to the beginning of the array).
-          db.query(`INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES ('${trimmedFirstName}', '${trimmedLastName}', ${roleChoices.indexOf(data.employeeRole) + 1}, ${employeeChoices.indexOf(data.employeeManager)})`, (err, result) => {
+          db.query(`INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES ('${trimmedFirstName}', '${trimmedLastName}', ${roleChoices.indexOf(data.employeeRole) + 1}, ${employeeChoicesWithNone.indexOf(data.employeeManager)})`, (err, result) => {
             if (err) { console.log(err); }
           });
           console.log(`${trimmedFirstName} ${trimmedLastName} successfully added!`);
