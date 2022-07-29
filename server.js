@@ -49,19 +49,83 @@ const menuPrompt = () => {
       name: 'userChoice'
     }
   ]).then(data => {
+
     // Viewing all departments
     if (data.userChoice == menuChoices[0]) {
       db.query('SELECT * FROM departments', (err, results) => {
-        if (err) { console.log(err) };
-        console.log('');
-        console.table(results);
+        if (err) { console.log(err); }
+        console.log(''); // Line break for formatting
+        console.table(results); 
       })
-      setTimeout(menuPrompt, 100);
+      setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
     }
+
     // Viewing all roles
     if (data.userChoice == menuChoices[1]) {
-      menuPrompt();
+      db.query('SELECT * FROM roles', (err, results) => {
+        if (err) { console.log(err); }
+        console.log(''); // Line break for formatting
+        // Replacing department_id with dep_name so the user can more easily read it
+        for (let i = 0; i < results.length; i++) {
+          
+          if (results[i]['department_id'] == 1) {
+            // Renaming the department_id key to department and setting the appropriate value
+            const newObj = Object.keys(results[i]).reduce((acc, val) => {
+              if (val == 'department_id') {
+                acc['department'] = 'Sales';
+              } else {
+                acc[val] = results[i][val];
+              }
+              return acc;
+            }, {});
+            results[i] = newObj;
+          }
+          
+          if (results[i]['department_id'] == 2) {
+            // Renaming the department_id key to department and setting the appropriate value
+            const newObj = Object.keys(results[i]).reduce((acc, val) => {
+              if (val == 'department_id') {
+                acc['department'] = 'Engineering';
+              } else {
+                acc[val] = results[i][val];
+              }
+              return acc;
+            }, {});
+            results[i] = newObj;
+          }
+          
+          if (results[i]['department_id'] == 3) {
+            // Renaming the department_id key to department and setting the appropriate value
+            const newObj = Object.keys(results[i]).reduce((acc, val) => {
+              if (val == 'department_id') {
+                acc['department'] = 'Finance';
+              } else {
+                acc[val] = results[i][val];
+              }
+              return acc;
+            }, {});
+            results[i] = newObj;
+          }
+          
+          if (results[i]['department_id'] == 4) {
+            // Renaming the department_id key to department and setting the appropriate value
+            const newObj = Object.keys(results[i]).reduce((acc, val) => {
+              if (val == 'department_id') {
+                acc['department'] = 'Legal';
+              } else {
+                acc[val] = results[i][val];
+              }
+              return acc;
+            }, {});
+            results[i] = newObj;
+          }
+        }
+        console.log(results);
+        console.table(results);
+      })
+      setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
     }
+
     // Viewing all employees
     if (data.userChoice == menuChoices[2]) {
       menuPrompt();
