@@ -51,7 +51,7 @@ const menuPrompt = () => {
     }
   });
 
-  // Loading a list of roles, used in "Add an employee"
+  // Loading a list of roles, used in "Add an employee" and "Update an employee's role"
   let roleChoices = [];
   db.query('SELECT roles.title FROM roles', (err, result) => {
     if (err) { console.log(err); }
@@ -60,12 +60,12 @@ const menuPrompt = () => {
     }
   });
 
-  // Loading a list of potential managers, used in "Add an employee"
-  let managerChoices = [];
+  // Loading a list of employees, used in "Add an employee" and "Update an employee's role"
+  let employeeChoices = [];
   db.query('SELECT CONCAT(employees.first_name, " ", employees.last_name) AS name FROM employees', (err, result) => {
     if (err) { console.log(err); }
     for (let i = 0; i < result.length; i++) {
-      managerChoices.push(result[i].name);
+      employeeChoices.push(result[i].name);
     }
   });
 
@@ -190,7 +190,7 @@ const menuPrompt = () => {
         {
           type: 'list',
           message: "Who is the employee's manager?",
-          choices: managerChoices,
+          choices: employeeChoices.unshift('None'),
           name: 'employeeManager'
         }
       ]).then(data => {
@@ -202,8 +202,8 @@ const menuPrompt = () => {
           console.log('');
           setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
         } else {
-          // roleChoices.indexOf(data.employeeRole) + 1 gives the role_id of the user-selected role. Similar idea for manager_id.
-          db.query(`INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES ('${trimmedFirstName}', '${trimmedLastName}', ${roleChoices.indexOf(data.employeeRole) + 1}, ${managerChoices.indexOf(data.employeeManager) + 1})`, (err, result) => {
+          // roleChoices.indexOf(data.employeeRole) + 1 gives the role_id of the user-selected role. Similar idea for manager_id (no +1 because I added a None option to the beginning of the array).
+          db.query(`INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES ('${trimmedFirstName}', '${trimmedLastName}', ${roleChoices.indexOf(data.employeeRole) + 1}, ${employeeChoices.indexOf(data.employeeManager)})`, (err, result) => {
             if (err) { console.log(err); }
           });
           console.log(`${trimmedFirstName} ${trimmedLastName} successfully added!`);
@@ -214,7 +214,29 @@ const menuPrompt = () => {
     }
     // Updating an employee's role
     if (data.userChoice == menuChoices[6]) {
-      menuPrompt();
+      inquirer.prompt([
+        {
+          type: 'list',
+          message: "Which employee would you like to update?",
+          choices: employeeChoices,
+          name: 'employeeToUpdate'
+        },
+        {
+          type: 'list',
+          message: 'Which role do you want to assign the selected employee?',
+          choices: roleChoices,
+          name: 'roleToAssign'
+        }
+      ]).then(data => {
+        console.log('');
+        // roleChoices.indexOf(data.roleToAssign) + 1 gives the role_id of the user-selected role. Similar idea for employee.id
+        db.query(`UPDATE employees SET role_id = ${roleChoices.indexOf(data.roleToAssign) + 1} WHERE id = ${employeeChoices.indexOf(data.employeeToUpdate) + 1}`, (err, result) => {
+          if (err) { console.log(err); }
+        });
+        console.log('Role successfully updated!');
+        console.log('');
+        setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
+      });
     }
     // Quit
     if (data.userChoice == menuChoices[7]) {
