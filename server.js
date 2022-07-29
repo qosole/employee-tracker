@@ -51,6 +51,25 @@ const menuPrompt = () => {
     }
   });
 
+  // Loading a list of roles, used in "Add an employee"
+  let roleChoices = [];
+  db.query('SELECT roles.title FROM roles', (err, result) => {
+    if (err) { console.log(err); }
+    for (let i = 0; i < result.length; i++) {
+      roleChoices.push(result[i].title);
+    }
+  });
+
+  // Loading a list of potential managers, used in "Add an employee"
+  let managerChoices = [];
+  db.query('SELECT CONCAT(employees.first_name, " ", employees.last_name) AS name FROM employees', (err, result) => {
+    if (err) { console.log(err); }
+    for (let i = 0; i < result.length; i++) {
+      managerChoices.push(result[i].name);
+    }
+  });
+
+
   inquirer.prompt([
     {
       type: 'list',
@@ -141,6 +160,7 @@ const menuPrompt = () => {
           console.log('');
           setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
         } else {
+          // departmentChoices.indexOf(data.roleDepartment) + 1 gives the department_id of the user-selected department
           db.query(`INSERT INTO roles(title, department_id, salary) VALUES ('${trimmedName}', ${departmentChoices.indexOf(data.roleDepartment) + 1}, ${trimmedSalary})`, (err, result) => {
             if (err) { console.log(err); }
           });
@@ -152,7 +172,45 @@ const menuPrompt = () => {
     }
     // Adding an employee
     if (data.userChoice == menuChoices[5]) {
-      menuPrompt();
+      inquirer.prompt([
+        {
+          message: "Enter employee's first name (if you change your mind, enter nothing): ",
+          name: 'employeeFirstName'
+        },
+        {
+          message: "Enter employee's last name (if you change your mind, enter nothing): ",
+          name: 'employeeLastName'
+        },
+        {
+          type: 'list',
+          message: "What is the employee's role?",
+          choices: roleChoices,
+          name: 'employeeRole'
+        },
+        {
+          type: 'list',
+          message: "Who is the employee's manager?",
+          choices: managerChoices,
+          name: 'employeeManager'
+        }
+      ]).then(data => {
+        console.log('');
+        const trimmedFirstName = data.employeeFirstName.trim();
+        const trimmedLastName = data.employeeLastName.trim();
+        if (trimmedFirstName == '' || trimmedLastName == '') {
+          console.log('No employee added');
+          console.log('');
+          setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
+        } else {
+          // roleChoices.indexOf(data.employeeRole) + 1 gives the role_id of the user-selected role. Similar idea for manager_id.
+          db.query(`INSERT INTO employees(first_name, last_name, role_id, manager_id) VALUES ('${trimmedFirstName}', '${trimmedLastName}', ${roleChoices.indexOf(data.employeeRole) + 1}, ${managerChoices.indexOf(data.employeeManager) + 1})`, (err, result) => {
+            if (err) { console.log(err); }
+          });
+          console.log(`${trimmedFirstName} ${trimmedLastName} successfully added!`);
+          console.log('');
+          setTimeout(menuPrompt, 100); 
+        }
+      });
     }
     // Updating an employee's role
     if (data.userChoice == menuChoices[6]) {
