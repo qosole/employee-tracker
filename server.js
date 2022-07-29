@@ -50,14 +50,16 @@ const menuPrompt = () => {
     }
   ]).then(data => {
 
+    // Line break for formatting
+    console.log(''); 
+
     // Viewing all departments
     if (data.userChoice == menuChoices[0]) {
       db.query('SELECT * FROM departments', (err, results) => {
         if (err) { console.log(err); }
-        console.log(''); // Line break for formatting
-        console.table(results); 
-      })
-      setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
+        console.table(results);
+        setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break 
+      });
     }
 
     // Viewing all roles
@@ -65,10 +67,9 @@ const menuPrompt = () => {
       // Selecting roles table but changing the department_id column to department for user readability
       db.query('SELECT roles.id, roles.title, departments.dep_name AS department, roles.salary FROM roles JOIN departments ON roles.department_id = departments.id', (err, results) => {
         if (err) { console.log(err); }
-        console.log(''); // Line break for formatting
         console.table(results);
+        setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
       });
-      setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
     }
 
     // Viewing all employees
@@ -76,29 +77,34 @@ const menuPrompt = () => {
       // Selecting employees table but changing the role_id column to title, changing manager_id column to manager, and adding the data from the roles table for user readability
       db.query('SELECT all_employees.id, all_employees.first_name, all_employees.last_name, roles.title, departments.dep_name AS department, roles.salary, CONCAT(manager_employees.first_name, " ", manager_employees.last_name) AS manager FROM employees all_employees JOIN roles ON all_employees.role_id = roles.id JOIN departments ON roles.department_id = departments.id LEFT JOIN employees manager_employees ON all_employees.manager_id = manager_employees.id;', (err, results) => {
         if (err) { console.log(err); }
-        console.log(''); // Line break for formatting
         console.table(results);
-      })
-      setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
+        setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
+      });
     }
     // Adding a department
     if (data.userChoice == menuChoices[3]) {
       inquirer.prompt([
         {
-          message: 'Enter the name of the department: ',
+          message: 'Enter the name of the department (if you change your mind, enter nothing): ',
           name: 'departmentName'
         }
       ]).then(data => {
-        db.query(`INSERT INTO departments(dep_name) VALUES ('${data.departmentName}')`);
-        console.log(''); // Line break for formatting
-        console.log(`${data.departmentName} successfully added!`);
         console.log('');
-        setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
+        if (data.departmentName.trim() == '') {
+          console.log('No department added');
+          console.log('');
+          setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
+        } else {
+          db.query(`INSERT INTO departments(dep_name) VALUES ('${data.departmentName}')`);
+          console.log(`${data.departmentName} successfully added!`);
+          console.log('');
+          setTimeout(menuPrompt, 100); 
+        }
       });
     }
     // Adding a role
     if (data.userChoice == menuChoices[4]) {
-      menuPrompt();
+
     }
     // Adding an employee
     if (data.userChoice == menuChoices[5]) {
@@ -112,7 +118,7 @@ const menuPrompt = () => {
     if (data.userChoice == menuChoices[7]) {
       process.exit(0);
     }
-  })
+  });
 }
 
 menuPrompt();
