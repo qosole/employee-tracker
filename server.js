@@ -83,7 +83,18 @@ const menuPrompt = () => {
     }
     // Adding a department
     if (data.userChoice == menuChoices[3]) {
-      menuPrompt();
+      inquirer.prompt([
+        {
+          message: 'Enter the name of the department: ',
+          name: 'departmentName'
+        }
+      ]).then(data => {
+        db.query(`INSERT INTO departments(dep_name) VALUES ('${data.departmentName}')`);
+        console.log(''); // Line break for formatting
+        console.log(`${data.departmentName} successfully added!`);
+        console.log('');
+        setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
+      });
     }
     // Adding a role
     if (data.userChoice == menuChoices[4]) {
