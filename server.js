@@ -1,7 +1,7 @@
 const express = require('express');
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
-const cTable = require('console.table')
+const cTable = require('console.table');
 
 const PORT = process.env.PORT || 3001;
 const app = express();
@@ -40,7 +40,17 @@ const menuPrompt = () => {
     '6. Add an employee',
     "7. Update an employee's role",
     '8. Quit'
-  ]
+  ];
+
+  // Loading a list of departments, used in "Add a role"
+  let departmentChoices = [];
+  db.query('SELECT departments.dep_name FROM departments', (err, result) => {
+    if (err) { console.log(err); }
+    for (let i = 0; i < result.length; i++) {
+      departmentChoices.push(result[i].dep_name);
+    }
+  });
+
   inquirer.prompt([
     {
       type: 'list',
@@ -90,13 +100,16 @@ const menuPrompt = () => {
         }
       ]).then(data => {
         console.log('');
-        if (data.departmentName.trim() == '') {
+        const trimmedName = data.departmentName.trim();
+        if (trimmedName == '') {
           console.log('No department added');
           console.log('');
           setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
         } else {
-          db.query(`INSERT INTO departments(dep_name) VALUES ('${data.departmentName}')`);
-          console.log(`${data.departmentName} successfully added!`);
+          db.query(`INSERT INTO departments(dep_name) VALUES ('${trimmedName}')`, (err, result) => {
+            if (err) { console.log(err); }
+          });
+          console.log(`${trimmedName} successfully added!`);
           console.log('');
           setTimeout(menuPrompt, 100); 
         }
@@ -104,7 +117,38 @@ const menuPrompt = () => {
     }
     // Adding a role
     if (data.userChoice == menuChoices[4]) {
-
+      inquirer.prompt([
+        {
+          message: 'Enter the name of the role (if you change your mind, enter nothing): ',
+          name: 'roleName'
+        },
+        {
+          message: 'Enter the salary of the role (if you change your mind, enter nothing): ',
+          name: 'roleSalary'
+        },
+        {
+          type: 'list',
+          message: 'Which department does the role belong to?',
+          choices: departmentChoices,
+          name: 'roleDepartment'
+        }
+      ]).then(data => {
+        console.log('');
+        const trimmedName = data.roleName.trim();
+        const trimmedSalary = data.roleSalary.trim();
+        if (trimmedName == '' || trimmedSalary == '') {
+          console.log('No role added');
+          console.log('');
+          setTimeout(menuPrompt, 100); // Looping the menu after a delay so it doesn't break
+        } else {
+          db.query(`INSERT INTO roles(title, department_id, salary) VALUES ('${trimmedName}', ${departmentChoices.indexOf(data.roleDepartment) + 1}, ${trimmedSalary})`, (err, result) => {
+            if (err) { console.log(err); }
+          });
+          console.log(`${trimmedName} successfully added!`);
+          console.log('');
+          setTimeout(menuPrompt, 100);
+        }
+      })
     }
     // Adding an employee
     if (data.userChoice == menuChoices[5]) {
